@@ -1,47 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="@color/cardview_dark_background">
 
-    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/cardView"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_gravity="center"
-        card_view:cardCornerRadius="6dp"
-        card_view:cardElevation="@dimen/cardview_default_radius">
+    <ImageView
+        android:id="@+id/main_img"
+        android:layout_width="0dp"
+        android:layout_height="250dp"
+        android:src="@android:drawable/btn_star_big_on"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">// Only works inside a RelativeLayout
+    <TextView
+        android:id="@+id/main_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="serif"
+        android:paddingBottom="12dp"
+        android:paddingLeft="6dp"
+        android:text="TITLE"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/background_light"
+        android:textSize="24sp"
+        app:layout_constraintTop_toBottomOf="@id/main_img" />
 
-            <ImageView
-                android:id="@+id/main_img"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:adjustViewBounds="false"
-                android:cropToPadding="false"
-                android:src="@android:drawable/btn_star_big_on" />
-
-            <TextView
-                android:id="@+id/main_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBottom="@+id/main_img"
-                android:layout_alignLeft="@+id/main_img"
-                android:layout_alignRight="@+id/main_img"
-                android:layout_alignTop="@+id/main_img"
-                android:layout_margin="1dp"
-                android:gravity="bottom"
-                android:text="TITLE"
-                android:textColor="@color/cardview_dark_background"
-                android:textSize="30sp" />
-
-        </RelativeLayout>
-
-    </android.support.v7.widget.CardView>
-
-</LinearLayout>
+</android.support.constraint.ConstraintLayout>

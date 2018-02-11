@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        OkHttpHandler.RequestTask(recyclerView).execute(UrlApi().create())
+        OkHttpHandler.RequestTask(recyclerView, this).execute(UrlApi().create())
 
     }
 }
