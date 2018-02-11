@@ -13,8 +13,18 @@ import com.squareup.picasso.Picasso
 class ListAdapter(val data: News, private val context: Context) : RecyclerView.Adapter<ListAdapter.ViewHolder>() {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.title.text = data.articles[position].title.substring(0..25) + "..."
-        Picasso.with(context).load(data.articles[position].urlToImage).into(holder.img)
+        val tmpTitle = data.articles[position].title
+        val tmpUrlToImage = data.articles[position].urlToImage
+        val tmpPublishedAt = data.articles[position].publishedAt
+
+        holder.title.text = if (tmpTitle.length < 90) tmpTitle else tmpTitle.substring(0..90) + "..."
+
+        if (tmpUrlToImage != null)
+            Picasso.with(context).load(tmpUrlToImage).into(holder.img)
+        else
+            Picasso.with(context).load("http://www.mydog.am/images/noimage.png").into(holder.img)
+
+        holder.publishedAt.text = tmpPublishedAt.toLocaleString()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -26,16 +36,7 @@ class ListAdapter(val data: News, private val context: Context) : RecyclerView.A
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val title: TextView = itemView.findViewById(R.id.main_title)
+        val publishedAt: TextView = itemView.findViewById(R.id.main_date)
         val img: ImageView = itemView.findViewById(R.id.main_img)
     }
 }
-class NewsItem() {
-    var author: String = ""
-    var title: String = ""
-    var description: String = ""
-    var url: String = ""
-    var urlToImage: String = ""
-    var publishedAt: String = ""
-}
-
-data class News(val articles: ArrayList<NewsItem>) { }
