@@ -57,9 +57,10 @@
             android:layout_height="wrap_content"
             android:fontFamily="serif"
             android:paddingRight="6dp"
+            android:paddingBottom="6dp"
             android:text="14:00"
             android:textColor="@android:color/black"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:textStyle="italic"
             app:layout_constraintRight_toRightOf="@id/main_img"
             app:layout_constraintTop_toBottomOf="@id/main_img" />
