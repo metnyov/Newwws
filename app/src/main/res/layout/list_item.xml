@@ -10,8 +10,9 @@
 
     <ImageView
         android:id="@+id/item_img"
-        android:layout_width="0dp"
-        android:layout_height="250dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="300dp"
         android:paddingTop="4dp"
         android:src="@android:color/holo_green_dark"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -31,17 +32,31 @@
 
     <TextView
         android:id="@+id/item_description"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif"
         android:lineSpacingExtra="2dp"
         android:paddingLeft ="12dp"
-        android:paddingBottom ="12dp"
+        android:paddingBottom ="6dp"
         android:paddingRight ="12dp"
-        android:text="Чтобы наш специальной темойчтобы оно было похоже на родные приложения Android. Сама система Android уже имеет несколько предустановленных тем, которыми можно воспользоваться в своих целях. Вам достаточно только указать имя темы в манифесте."
+        android:text="Чтобы наш спroid уже имеет несколько предустановленных тем, которыми можно воспользоваться в своих целях. Вам достаточно только указать имя темы в манифесте."
         android:textSize="18dp"
         app:layout_constraintLeft_toLeftOf="@id/item_title"
         app:layout_constraintTop_toBottomOf="@id/item_title" />
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/readBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:text="Читать статью"
+        android:textSize="12sp"
+        app:layout_constraintLeft_toLeftOf="@+id/constraintLayout"
+        app:layout_constraintRight_toRightOf="@+id/constraintLayout"
+        app:layout_constraintTop_toBottomOf="@+id/item_description"/>
 
     <TextView
         android:id="@+id/item_author"
@@ -49,18 +64,21 @@
         android:layout_height="wrap_content"
         android:fontFamily="serif"
         android:paddingLeft = "12dp"
-        android:text="Автор: АЫФт23т3209"
+        android:paddingTop="6dp"
+        android:text="Author"
         android:textColor="#ffffff"
         android:textSize="14sp"
         app:layout_constraintLeft_toLeftOf="@id/item_description"
-        app:layout_constraintTop_toBottomOf="@id/item_description" />
+        app:layout_constraintTop_toBottomOf="@id/readBtn" />
 
     <TextView
         android:id="@+id/item_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="serif"
+        android:paddingTop="6dp"
         android:paddingRight="12dp"
+        android:paddingBottom="6dp"
         android:text="14:00"
         android:textColor="#ffffff"
         android:textSize="12sp"

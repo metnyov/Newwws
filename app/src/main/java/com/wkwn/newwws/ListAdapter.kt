@@ -7,30 +7,33 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.squareup.picasso.Picasso
 import android.support.v4.content.ContextCompat.startActivity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import com.squareup.picasso.Picasso
 
 
 class ListAdapter(val data: News, private val context: Context) : RecyclerView.Adapter<ListAdapter.ViewHolder>() {
 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+
         val tmpTitle = data.articles[position].title
-        val tmpUrlToImage = data.articles[position].urlToImage
+        val tmpUrlToImage: String? = data.articles[position].urlToImage
         val tmpPublishedAt = data.articles[position].publishedAt
+
+        if (tmpUrlToImage != null)
+            //AsyncHandler.ImageLoadTask(holder.img).execute(tmpUrlToImage)
+            Picasso.with(context).load(Uri.parse(tmpUrlToImage)).into(holder.img)
+        else
+            Picasso.with(context).load(Uri.parse("http://image.ibb.co/nx9ZO7/gazeta.png")).into(holder.img)
 
         holder.title.text = if (tmpTitle.length <= 100) tmpTitle else tmpTitle.substring(0..100) + "..."
 
-        if (tmpUrlToImage != null || tmpUrlToImage != "")
-            Picasso.with(context).load(tmpUrlToImage).into(holder.img)
-        else
-            Picasso.with(context).load("http://resrahod.org.in/media/no-image.png").into(holder.img)
-
         holder.publishedAt.text = tmpPublishedAt.toLocaleString()
 
-        holder.itemView.setOnClickListener(View.OnClickListener {
+        holder.itemView.setOnClickListener({
             val intent = Intent(context, ItemActivity::class.java)
             intent.putExtra("author", data.articles[position].author)
             intent.putExtra("title", data.articles[position].title)
@@ -38,7 +41,7 @@ class ListAdapter(val data: News, private val context: Context) : RecyclerView.A
             intent.putExtra("url", data.articles[position].url)
             intent.putExtra("urlToImage", data.articles[position].urlToImage)
             intent.putExtra("publishedAt", data.articles[position].publishedAt.toLocaleString())
-            startActivity(context, intent, Bundle() )
+            startActivity(context, intent, Bundle())
         })
     }
 

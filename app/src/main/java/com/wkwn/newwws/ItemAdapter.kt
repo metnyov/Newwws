@@ -5,9 +5,14 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import com.squareup.picasso.Picasso
+import android.support.v4.content.ContextCompat.startActivity
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
 
 
 class ItemAdapter (private val author: String?, private val title: String?, private val description: String?,
@@ -22,9 +27,12 @@ class ItemAdapter (private val author: String?, private val title: String?, priv
         holder.publishedAt.text = publishedAt
 
         if (urlToImage != null)
-            Picasso.with(context).load(urlToImage).into(holder.img)
-        else
-            Picasso.with(context).load("http://resrahod.org.in/media/no-image.png").into(holder.img)
+            Picasso.with(context).load(Uri.parse(urlToImage)).resize(holder.description.width, 600).into(holder.img)
+
+        holder.btn.setOnClickListener {
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(context, browserIntent, Bundle())
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -40,5 +48,6 @@ class ItemAdapter (private val author: String?, private val title: String?, priv
         val author: TextView = itemView.findViewById(R.id.item_author)
         val publishedAt: TextView = itemView.findViewById(R.id.item_date)
         val img: ImageView = itemView.findViewById(R.id.item_img)
+        val btn: Button = itemView.findViewById(R.id.readBtn)
     }
 }
