@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_item.*
+import java.util.*
 
 
 class ItemActivity : AppCompatActivity() {
@@ -11,17 +12,16 @@ class ItemActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_item)
 
-        val author = intent.getStringExtra("author")
-        val title = intent.getStringExtra("title")
-        val description = intent.getStringExtra("description")
-        val url = intent.getStringExtra("url")
-        val urlToImage = intent.getStringExtra("urlToImage")
-        val publishedAt = intent.getStringExtra("publishedAt")
+        @Suppress("DEPRECATION")
+        val date = Date(intent.getStringExtra("publishedAt"))
+
+        val newsItem = NewsItem(intent.getStringExtra("author"), intent.getStringExtra("title"),
+                intent.getStringExtra("description"), intent.getStringExtra("url"),
+                intent.getStringExtra("urlToImage"), date)
 
         recyclerViewItem.setHasFixedSize(true)
         recyclerViewItem.layoutManager = LinearLayoutManager(this)
 
-        recyclerViewItem.adapter = ItemAdapter(author, title, description,
-                url, urlToImage, publishedAt, this)
+        recyclerViewItem.adapter = ItemAdapter(newsItem, this)
     }
 }

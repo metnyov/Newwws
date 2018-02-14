@@ -14,7 +14,6 @@
         android:layout_height="wrap_content"
         android:maxHeight="300dp"
         android:paddingTop="4dp"
-        android:src="@android:color/holo_green_dark"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
@@ -36,10 +35,10 @@
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif"
         android:lineSpacingExtra="2dp"
-        android:paddingLeft ="12dp"
-        android:paddingBottom ="6dp"
-        android:paddingRight ="12dp"
-        android:text="Чтобы наш спroid уже имеет несколько предустановленных тем, которыми можно воспользоваться в своих целях. Вам достаточно только указать имя темы в манифесте."
+        android:paddingBottom="6dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:text="Text Text Text Text"
         android:textSize="18dp"
         app:layout_constraintLeft_toLeftOf="@id/item_title"
         app:layout_constraintTop_toBottomOf="@id/item_title" />
