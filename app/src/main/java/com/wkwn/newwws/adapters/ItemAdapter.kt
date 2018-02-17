@@ -1,4 +1,4 @@
-package com.wkwn.newwws
+package com.wkwn.newwws.adapters
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
@@ -13,6 +13,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import com.bumptech.glide.Glide
+import com.wkwn.newwws.NewsItem
+import com.wkwn.newwws.R
 
 
 class ItemAdapter (private val newsItem: NewsItem,

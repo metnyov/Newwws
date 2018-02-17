@@ -1,4 +1,4 @@
-package com.wkwn.newwws
+package com.wkwn.newwws.adapters
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
@@ -12,6 +12,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import com.bumptech.glide.Glide
+import com.wkwn.newwws.News
+import com.wkwn.newwws.R
+import com.wkwn.newwws.activities.ItemActivity
 
 
 class ListAdapter(val data: News, private val context: Context) : RecyclerView.Adapter<ListAdapter.ViewHolder>() {
@@ -35,6 +38,7 @@ class ListAdapter(val data: News, private val context: Context) : RecyclerView.A
 
         holder.itemView.setOnClickListener({
             val intent = Intent(context, ItemActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.putExtra("author", data.articles[position].author)
             intent.putExtra("title", data.articles[position].title)
             intent.putExtra("description", data.articles[position].description)
