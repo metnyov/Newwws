@@ -12,15 +12,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.wkwn.newwws.AsyncHandler
-import com.wkwn.newwws.News
-import com.wkwn.newwws.R
-import com.wkwn.newwws.UrlApi
+import com.wkwn.newwws.*
 import com.wkwn.newwws.adapters.ListAdapter
+import com.wkwn.newwws.models.DBHelper
+import com.wkwn.newwws.models.News
+import com.wkwn.newwws.models.UrlApi
 
 
 @SuppressLint("ValidFragment")
-class NewsFragment(private val category: UrlApi.Category, private val country: UrlApi.Country) : Fragment() {
+class NewsFragment(private val dbHelper: DBHelper, private val category: UrlApi.Category, private val country: UrlApi.Country) : Fragment() {
 
     private var news: News = News(arrayListOf())
     private lateinit var rV: RecyclerView
@@ -41,10 +41,7 @@ class NewsFragment(private val category: UrlApi.Category, private val country: U
         rV.setHasFixedSize(true)
         rV.layoutManager = LinearLayoutManager(activity.applicationContext)
 
-        if (news.isEmpty())
-            refresh()
-        else
-            rV.adapter = ListAdapter(news, activity.applicationContext)
+        refresh()
 
         swipe.setOnRefreshListener({ refresh() })
 
@@ -53,14 +50,36 @@ class NewsFragment(private val category: UrlApi.Category, private val country: U
 
     private fun refresh() {
         swipe.isRefreshing = true
+
+        val curTable = when(category){
+            UrlApi.Category.DEFAULT -> DBHelper.TABLE_DEFAULT
+            UrlApi.Category.Business -> DBHelper.TABLE_BUSINESS
+            UrlApi.Category.Health -> DBHelper.TABLE_HEALTH
+            UrlApi.Category.Sports -> DBHelper.TABLE_SPORTS
+            UrlApi.Category.Technology -> DBHelper.TABLE_TECHNOLOGY
+            UrlApi.Category.Entertainment -> DBHelper.TABLE_ENTERTAINMENT
+        }
+
         if(hasConnection()) {
-            if (!news.isEmpty())
-                news.articles.clear()
-            AsyncHandler.RequestTask(rV, swipe, news, activity.applicationContext)
-                    .execute(UrlApi().create(category, country))
+            when {
+                news.isEmpty() -> AsyncHandler.RequestTask(rV, swipe, news, dbHelper, category, activity.applicationContext)
+                        .execute(UrlApi().create(category, country))
+
+                dbHelper.checkCompareId(curTable, news.articles[0].publishedAt.time) -> {
+                    rV.adapter = ListAdapter(dbHelper.toNews(curTable), activity.applicationContext)
+                    swipe.isRefreshing = false
+                }
+
+                else -> {
+                    if (!news.isEmpty())
+                        news.articles.clear()
+                    AsyncHandler.RequestTask(rV, swipe, news, dbHelper, category, activity.applicationContext)
+                            .execute(UrlApi().create(category, country))
+                }
+            }
         }
         else {
-            //TODO: Взятие данных из БД
+            rV.adapter = ListAdapter(dbHelper.toNews(curTable), activity.applicationContext)
             swipe.isRefreshing = false
             Toast.makeText(activity.applicationContext, "Нет соединения", Toast.LENGTH_SHORT).show()
         }

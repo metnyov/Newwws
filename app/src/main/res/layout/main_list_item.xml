@@ -23,7 +23,7 @@
         <ImageView
             android:id="@+id/main_img"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="240dp"
             android:paddingTop="6dp"
             android:src="@android:drawable/ic_menu_camera"
             app:layout_constraintLeft_toLeftOf="parent"

@@ -1,4 +1,4 @@
-package com.wkwn.newwws
+package com.wkwn.newwws.models
 
 import java.util.*
 

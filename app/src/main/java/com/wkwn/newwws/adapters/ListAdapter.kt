@@ -12,7 +12,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import com.bumptech.glide.Glide
-import com.wkwn.newwws.News
+import com.wkwn.newwws.models.News
 import com.wkwn.newwws.R
 import com.wkwn.newwws.activities.ItemActivity
 
@@ -30,6 +30,7 @@ class ListAdapter(val data: News, private val context: Context) : RecyclerView.A
                 if (tmp.scheme != null) tmp
                 else noPhotoUrl
             }
+
         Glide.with(context).load(tmpUrlToImage).into(holder.img)
 
         holder.title.text = if (tmpTitle.length <= 100) tmpTitle else tmpTitle.substring(0..100) + "..."

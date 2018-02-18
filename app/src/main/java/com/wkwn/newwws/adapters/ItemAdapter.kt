@@ -13,7 +13,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import com.bumptech.glide.Glide
-import com.wkwn.newwws.NewsItem
+import com.wkwn.newwws.models.NewsItem
 import com.wkwn.newwws.R
 
 

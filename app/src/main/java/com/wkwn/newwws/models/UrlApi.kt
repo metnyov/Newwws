@@ -1,4 +1,4 @@
-package com.wkwn.newwws
+package com.wkwn.newwws.models
 
 /*API: https://newsapi.org*/
 
@@ -9,9 +9,8 @@ class UrlApi {
 
     enum class Category(val category: String?){
         Business("business"), Entertainment("entertainment"),
-        Health("health"), Science("science"),
-        Sports("sports"), Technology("technology"), DEFAULT(null);
-        // Science == Technology 17.02.18
+        Health("health"), Sports("sports"),
+        Technology("technology"), DEFAULT(null);
     }
 
     enum class Country(val country: String){

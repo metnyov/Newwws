@@ -5,7 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.MenuItem
 import com.wkwn.newwws.adapters.ItemAdapter
-import com.wkwn.newwws.NewsItem
+import com.wkwn.newwws.models.NewsItem
 import com.wkwn.newwws.R
 import kotlinx.android.synthetic.main.activity_item.*
 import java.util.*
