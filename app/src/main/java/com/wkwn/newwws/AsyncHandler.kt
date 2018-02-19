@@ -24,36 +24,53 @@ class AsyncHandler {
     @SuppressLint("StaticFieldLeak")
     class RequestTask(private val recyclerView: RecyclerView, private val swipeRefreshLayout: SwipeRefreshLayout,
                       private var news: News, private val dbHelper: DBHelper,
-                      private val category: UrlApi.Category, private val context: Context) : AsyncTask<String, Void, News>() {
+                      category: UrlApi.Category, private val context: Context) : AsyncTask<String, Void, Void>() {
 
-        override fun doInBackground(vararg urls: String): News {
-
-            val client = OkHttpClient()
-            val request = Request.Builder()
-                    .url(urls[0])
-                    .build()
-            val response = client.newCall(request).execute()
-
-            val responseText = response.body()!!.string()
-
-            return Gson().fromJson(responseText, News::class.java)
+        private val curTable = when(category){
+            UrlApi.Category.DEFAULT -> DBHelper.TABLE_DEFAULT
+            UrlApi.Category.Business -> DBHelper.TABLE_BUSINESS
+            UrlApi.Category.Health -> DBHelper.TABLE_HEALTH
+            UrlApi.Category.Sports -> DBHelper.TABLE_SPORTS
+            UrlApi.Category.Technology -> DBHelper.TABLE_TECHNOLOGY
+            UrlApi.Category.Entertainment -> DBHelper.TABLE_ENTERTAINMENT
         }
 
-        override fun onPostExecute(result: News) {
-            super.onPostExecute(result)
-            val curTable = when(category){
-                UrlApi.Category.DEFAULT -> DBHelper.TABLE_DEFAULT
-                UrlApi.Category.Business -> DBHelper.TABLE_BUSINESS
-                UrlApi.Category.Health -> DBHelper.TABLE_HEALTH
-                UrlApi.Category.Sports -> DBHelper.TABLE_SPORTS
-                UrlApi.Category.Technology -> DBHelper.TABLE_TECHNOLOGY
-                UrlApi.Category.Entertainment -> DBHelper.TABLE_ENTERTAINMENT
+        override fun doInBackground(vararg urls: String): Void? {
+
+            val client = OkHttpClient()
+            val request = Request.Builder().url(urls[0]).build()
+            val response = client.newCall(request).execute()
+            val responseText = response.body()!!.string()
+            news.articles.addAll(Gson().fromJson(responseText, News::class.java).articles)
+
+            //----------- Write Data Base ---------------
+            if (news.isEmpty())
+                return null
+
+            val database = dbHelper.writableDatabase
+
+            for (el in news.articles){
+                if (dbHelper.checkCompareId(curTable, el.publishedAt.time, el.url))
+                    break
+
+                val contentValues = ContentValues()
+                contentValues.put(DBHelper.KEY_ID, el.publishedAt.time)
+                contentValues.put(DBHelper.KEY_AUTHOR, el.author)
+                contentValues.put(DBHelper.KEY_TITLE, el.title)
+                contentValues.put(DBHelper.KEY_DESCRIPTION, el.description)
+                contentValues.put(DBHelper.KEY_URL, el.url)
+                contentValues.put(DBHelper.KEY_PATH_TO_IMAGE, el.urlToImage)
+                contentValues.put(DBHelper.KEY_PUBLISHED_AT, el.publishedAt.toString())
+
+                database.insert(curTable, null, contentValues)
             }
-            news.articles.addAll(result.articles)
+            //---------------------------------------------------------------
 
-            // !!!
-            WriteDataBaseTask(dbHelper, news, category).execute()
+            return null
+        }
 
+        override fun onPostExecute(result: Void?) {
+            //super.onPostExecute(result)
             recyclerView.adapter = ListAdapter(dbHelper.toNews(curTable), context)
             swipeRefreshLayout.isRefreshing = false
         }
@@ -80,7 +97,7 @@ class AsyncHandler {
             val contentValues = ContentValues()
 
             for (el in news.articles){
-                if (dbHelper.checkCompareId(curTable, el.publishedAt.time))
+                if (dbHelper.checkCompareId(curTable, el.publishedAt.time, el.url))
                     break
                 contentValues.put(DBHelper.KEY_ID, el.publishedAt.time)
                 contentValues.put(DBHelper.KEY_AUTHOR, el.author)
@@ -97,8 +114,7 @@ class AsyncHandler {
     }
 
     @SuppressLint("StaticFieldLeak")
-    class ReadDataBaseTask(private val dbHelper: DBHelper, private var news: News,
-                        private val category: UrlApi.Category) : AsyncTask<Void, Void, Void>() {
+    class ReadDataBaseTask(private val dbHelper: DBHelper, private var news: News) : AsyncTask<Void, Void, Void>() {
 
         override fun doInBackground(vararg p0: Void?): Void? {
             news = dbHelper.toNews()

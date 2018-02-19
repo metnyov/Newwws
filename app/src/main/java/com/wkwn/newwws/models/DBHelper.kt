@@ -97,11 +97,12 @@ class DBHelper(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         return news
     }
 
-    fun checkCompareId (table: String = TABLE_DEFAULT, id: Long): Boolean{
+    fun checkCompareId (table: String = TABLE_DEFAULT, id: Long, url: String?): Boolean{
         val db = this.readableDatabase
         val cursor = db.query(table, null, null, null, null, null, KEY_ID + " DESC")
         return if (cursor.moveToFirst())
-            cursor.getLong(cursor.getColumnIndex(DBHelper.KEY_ID)) == id
+            cursor.getLong(cursor.getColumnIndex(DBHelper.KEY_ID)) == id &&
+                    cursor.getString(cursor.getColumnIndex(DBHelper.KEY_URL)) == url
         else
             false
     }

@@ -3,6 +3,7 @@ package com.wkwn.newwws.fragments
 import android.annotation.SuppressLint
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
@@ -24,6 +25,7 @@ class NewsFragment(private val dbHelper: DBHelper, private val category: UrlApi.
 
     private var news: News = News(arrayListOf())
     private lateinit var rV: RecyclerView
+    private lateinit var fab: FloatingActionButton
     private lateinit var swipe: SwipeRefreshLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,14 +38,34 @@ class NewsFragment(private val dbHelper: DBHelper, private val category: UrlApi.
         val rootView: View = inflater!!.inflate(R.layout.fragment_main, container, false)
 
         rV = rootView.findViewById(R.id.recyclerView)
-        swipe = rootView.findViewById(R.id.swipeRefreshLayout)
-
         rV.setHasFixedSize(true)
         rV.layoutManager = LinearLayoutManager(activity.applicationContext)
+        rV.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int){
+                when(newState) {
+                    RecyclerView.SCROLL_STATE_IDLE -> {
+                        if ((recyclerView?.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition() < 5)
+                            fab.hide()
+                    }
+                    RecyclerView.SCROLL_STATE_SETTLING -> {
+                        if ((recyclerView?.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition() > 5)
+                            fab.show()
+                    }
+                }
+            }
+        })
+
+        fab = rootView.findViewById(R.id.fab)
+        fab.hide()
+        fab.setOnClickListener({
+            rV.scrollToPosition(0)
+            fab.hide()
+        })
+
+        swipe = rootView.findViewById(R.id.swipeRefreshLayout)
+        swipe.setOnRefreshListener({ refresh() })
 
         refresh()
-
-        swipe.setOnRefreshListener({ refresh() })
 
         return rootView
     }
@@ -65,7 +87,7 @@ class NewsFragment(private val dbHelper: DBHelper, private val category: UrlApi.
                 news.isEmpty() -> AsyncHandler.RequestTask(rV, swipe, news, dbHelper, category, activity.applicationContext)
                         .execute(UrlApi().create(category, country))
 
-                dbHelper.checkCompareId(curTable, news.articles[0].publishedAt.time) -> {
+                dbHelper.checkCompareId(curTable, news.articles[0].publishedAt.time, news.articles[0].url) -> {
                     rV.adapter = ListAdapter(dbHelper.toNews(curTable), activity.applicationContext)
                     swipe.isRefreshing = false
                 }

@@ -34,7 +34,6 @@ class ListAdapter(val data: News, private val context: Context) : RecyclerView.A
         Glide.with(context).load(tmpUrlToImage).into(holder.img)
 
         holder.title.text = if (tmpTitle.length <= 100) tmpTitle else tmpTitle.substring(0..100) + "..."
-
         holder.publishedAt.text = data.articles[position].getFormattedDateString("dd.MM.yy HH:mm")
 
         holder.itemView.setOnClickListener({
