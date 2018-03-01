@@ -21,7 +21,7 @@ import com.wkwn.newwws.models.UrlApi
 
 
 @SuppressLint("ValidFragment")
-class NewsFragment(private val dbHelper: DBHelper, private val category: UrlApi.Category, private val country: UrlApi.Country) : Fragment() {
+class NewsFragment(private val dbHelper: DBHelper, private val category: UrlApi.Category, private val country: String) : Fragment() {
 
     private var news: News = News(arrayListOf())
     private lateinit var rV: RecyclerView
@@ -41,6 +41,12 @@ class NewsFragment(private val dbHelper: DBHelper, private val category: UrlApi.
         rV.setHasFixedSize(true)
         rV.layoutManager = LinearLayoutManager(activity.applicationContext)
         rV.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            /*TODO: pagination
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int){
+                super.onScrolled(recyclerView, dx, dy)
+            }*/
+
             override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int){
                 when(newState) {
                     RecyclerView.SCROLL_STATE_IDLE -> {

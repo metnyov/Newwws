@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">Newwws</string>
-    <string name="rus">rus</string>
-    <string name="string">Украина</string>
+
+    <string name="ru">Russia</string>
+    <string name="ua">Ukraine</string>
+    <string name="us">United States</string>
+    <string name="gb">United Kingdom</string>
+
 </resources>

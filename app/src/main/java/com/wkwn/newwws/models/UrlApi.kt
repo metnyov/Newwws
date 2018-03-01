@@ -24,14 +24,14 @@ class UrlApi {
         UAE("ae"), Ukraine("ua"), UnitedKingdom("gb"), UnitedStates("us"), Venuzuela("ve");
     }
 
-    fun create(category: Category = Category.DEFAULT, country: Country = Country.Russia) =
+    fun create(category: Category = Category.DEFAULT, country: String = Country.Russia.country) =
             if (category == Category.DEFAULT)
                 url + "?" +
-                "country=" + country.country +
+                "country=" + country +
                 "&apiKey=" + apiKey
             else
                 url + "?" +
-                "country=" + country.country +
+                "country=" + country +
                 "&category=" + category.category +
                 "&apiKey=" + apiKey
 

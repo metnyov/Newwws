@@ -25,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:paddingTop="6dp"
-            android:src="@android:drawable/ic_menu_camera"
+            android:src="@drawable/newspaper"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
 
@@ -38,31 +38,38 @@
             android:paddingLeft="6dp"
             android:text="TITLE"
             android:textColor="#ffffff"
-            android:textSize="22sp"
+            android:textSize="21sp"
             app:layout_constraintBottom_toBottomOf="@id/main_img" />
 
         <TextView
-            android:id="@+id/main_urlBanner"
-            android:layout_width="wrap_content"
+            android:id="@+id/main_date"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="#99000000"
             android:fontFamily="serif"
-            android:padding="6dp"
-            android:text="newsapi.org"
-            android:textColor="#88000000"
-            android:textSize="12sp"
+            android:paddingBottom="4dp"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:paddingTop="4dp"
+            android:text="01 Января"
+            android:textColor="#ffffff"
+            android:textSize="10sp"
             android:textStyle="italic"
             app:layout_constraintLeft_toLeftOf="@id/main_img"
             app:layout_constraintTop_toBottomOf="@id/main_img" />
 
         <TextView
-            android:id="@+id/main_date"
+            android:id="@+id/main_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="serif"
-            android:padding="6dp"
+            android:paddingBottom="4dp"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:paddingTop="4dp"
             android:text="14:00"
-            android:textColor="#99000000"
-            android:textSize="12sp"
+            android:textColor="#ffffff"
+            android:textSize="10sp"
             app:layout_constraintRight_toRightOf="@id/main_img"
             app:layout_constraintTop_toBottomOf="@id/main_img" />
     </android.support.constraint.ConstraintLayout>

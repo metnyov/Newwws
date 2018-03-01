@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/ru"
-            android:title="Россия"
-            android:checked="true"/>
-        <item
-            android:id="@+id/ua"
-            android:title="Украина"/>
-        <item
-            android:id="@+id/us"
-            android:title="США"/>
-        <item
-            android:id="@+id/uk"
-            android:title="Великобритания"/>
-    </group>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/ru"
+        android:icon="@drawable/russia"
+        android:title="@string/ru"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/ua"
+        android:icon="@drawable/ukraine"
+        android:title="@string/ua"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/us"
+        android:icon="@drawable/united_states"
+        android:title="@string/us"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/gb"
+        android:icon="@drawable/united_kingdom"
+        android:title="@string/gb"
+        app:showAsAction="never"/>
 </menu>

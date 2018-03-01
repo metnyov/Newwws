@@ -12,6 +12,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.wkwn.newwws.models.News
 import com.wkwn.newwws.R
 import com.wkwn.newwws.activities.ItemActivity
@@ -20,21 +21,21 @@ import com.wkwn.newwws.activities.ItemActivity
 class ListAdapter(val data: News, private val context: Context) : RecyclerView.Adapter<ListAdapter.ViewHolder>() {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val noPhotoUrl: Uri = Uri.parse("http://image.ibb.co/nx9ZO7/gazeta.png")
 
         val tmpTitle = data.articles[position].title
 
-        val tmpUrlToImage: Uri? = if (data.articles[position].urlToImage == null) noPhotoUrl
-            else {
-                val tmp = Uri.parse(data.articles[position].urlToImage)
-                if (tmp.scheme != null) tmp
-                else noPhotoUrl
-            }
+        if (data.articles[position].urlToImage == null)
+            Glide.with(context).load(R.drawable.newspaper).into(holder.img)
+        else
+            Glide.with(context).load(Uri.parse(data.articles[position].urlToImage)).apply(RequestOptions()
+                    .placeholder(R.drawable.loading)
+                    .error(R.drawable.newspaper))
+                    .into(holder.img)
 
-        Glide.with(context).load(tmpUrlToImage).into(holder.img)
 
         holder.title.text = if (tmpTitle.length <= 100) tmpTitle else tmpTitle.substring(0..100) + "..."
-        holder.publishedAt.text = data.articles[position].getFormattedDateString("dd.MM.yy HH:mm")
+        holder.date.text = data.articles[position].getFormattedDateString("d MMMM")
+        holder.time.text = data.articles[position].getFormattedDateString("HH:mm")
 
         holder.itemView.setOnClickListener({
             val intent = Intent(context, ItemActivity::class.java)
@@ -58,7 +59,8 @@ class ListAdapter(val data: News, private val context: Context) : RecyclerView.A
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val title: TextView = itemView.findViewById(R.id.main_title)
-        val publishedAt: TextView = itemView.findViewById(R.id.main_date)
+        val time: TextView = itemView.findViewById(R.id.main_time)
+        val date: TextView = itemView.findViewById(R.id.main_date)
         val img: ImageView = itemView.findViewById(R.id.main_img)
     }
 }

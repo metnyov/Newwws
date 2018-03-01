@@ -17,6 +17,8 @@ import android.content.ContentValues
 import com.wkwn.newwws.models.DBHelper
 import com.wkwn.newwws.models.News
 import com.wkwn.newwws.models.UrlApi
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 
 class AsyncHandler {
@@ -37,13 +39,20 @@ class AsyncHandler {
 
         override fun doInBackground(vararg urls: String): Void? {
 
-            val client = OkHttpClient()
-            val request = Request.Builder().url(urls[0]).build()
-            val response = client.newCall(request).execute()
-            val responseText = response.body()!!.string()
-            news.articles.addAll(Gson().fromJson(responseText, News::class.java).articles)
+            try {
+                val client = OkHttpClient()
+                        .newBuilder()
+                        .readTimeout(2000, TimeUnit.MILLISECONDS)
+                        .build()
 
-            //----------- Write Data Base ---------------
+                val request = Request.Builder().url(urls[0]).build()
+                val response = client.newCall(request).execute()
+                val responseText = response.body()!!.string()
+                news.articles.addAll(Gson().fromJson(responseText, News::class.java).articles)
+            }
+            catch (e: IOException){}
+
+            //--------------- Write Data Base ---------------
             if (news.isEmpty())
                 return null
 
@@ -53,72 +62,26 @@ class AsyncHandler {
                 if (dbHelper.checkCompareId(curTable, el.publishedAt.time, el.url))
                     break
 
-                val contentValues = ContentValues()
-                contentValues.put(DBHelper.KEY_ID, el.publishedAt.time)
-                contentValues.put(DBHelper.KEY_AUTHOR, el.author)
-                contentValues.put(DBHelper.KEY_TITLE, el.title)
-                contentValues.put(DBHelper.KEY_DESCRIPTION, el.description)
-                contentValues.put(DBHelper.KEY_URL, el.url)
-                contentValues.put(DBHelper.KEY_PATH_TO_IMAGE, el.urlToImage)
-                contentValues.put(DBHelper.KEY_PUBLISHED_AT, el.publishedAt.toString())
+                val contentValues = ContentValues().apply {
+                    put(DBHelper.KEY_ID, el.publishedAt.time)
+                    put(DBHelper.KEY_AUTHOR, el.author)
+                    put(DBHelper.KEY_TITLE, el.title)
+                    put(DBHelper.KEY_DESCRIPTION, el.description)
+                    put(DBHelper.KEY_URL, el.url)
+                    put(DBHelper.KEY_PATH_TO_IMAGE, el.urlToImage)
+                    put(DBHelper.KEY_PUBLISHED_AT, el.publishedAt.toString())
+                }
 
                 database.insert(curTable, null, contentValues)
             }
-            //---------------------------------------------------------------
+            //----------------------------------------------
 
             return null
         }
 
         override fun onPostExecute(result: Void?) {
-            //super.onPostExecute(result)
             recyclerView.adapter = ListAdapter(dbHelper.toNews(curTable), context)
             swipeRefreshLayout.isRefreshing = false
-        }
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    class WriteDataBaseTask(private val dbHelper: DBHelper, private var news: News,
-                        private val category: UrlApi.Category) : AsyncTask<Void, Void, Void>() {
-
-        override fun doInBackground(vararg p0: Void?): Void? {
-
-            val curTable = when(category){
-                UrlApi.Category.DEFAULT -> DBHelper.TABLE_DEFAULT
-                UrlApi.Category.Business -> DBHelper.TABLE_BUSINESS
-                UrlApi.Category.Health -> DBHelper.TABLE_HEALTH
-                UrlApi.Category.Sports -> DBHelper.TABLE_SPORTS
-                UrlApi.Category.Technology -> DBHelper.TABLE_TECHNOLOGY
-                UrlApi.Category.Entertainment -> DBHelper.TABLE_ENTERTAINMENT
-            }
-            if (news.isEmpty())
-                return null
-
-            val database = dbHelper.writableDatabase
-            val contentValues = ContentValues()
-
-            for (el in news.articles){
-                if (dbHelper.checkCompareId(curTable, el.publishedAt.time, el.url))
-                    break
-                contentValues.put(DBHelper.KEY_ID, el.publishedAt.time)
-                contentValues.put(DBHelper.KEY_AUTHOR, el.author)
-                contentValues.put(DBHelper.KEY_TITLE, el.title)
-                contentValues.put(DBHelper.KEY_DESCRIPTION, el.description)
-                contentValues.put(DBHelper.KEY_URL, el.url)
-                contentValues.put(DBHelper.KEY_PATH_TO_IMAGE, el.urlToImage)
-                contentValues.put(DBHelper.KEY_PUBLISHED_AT, el.publishedAt.toString())
-
-                database.insert(curTable, null, contentValues)
-            }
-            return null
-        }
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    class ReadDataBaseTask(private val dbHelper: DBHelper, private var news: News) : AsyncTask<Void, Void, Void>() {
-
-        override fun doInBackground(vararg p0: Void?): Void? {
-            news = dbHelper.toNews()
-            return null
         }
     }
 
@@ -128,8 +91,8 @@ class AsyncHandler {
 
         override fun doInBackground(vararg pair: Pair<Fragment, String>): ViewPagerAdapter {
             val adapter = ViewPagerAdapter(fragmentManager)
-            for (i: Int in 0..5)
-                adapter.addFragment(pair[i].first, pair[i].second)
+            for (p in pair)
+                adapter.addFragment(p.first, p.second)
             return adapter
         }
 
