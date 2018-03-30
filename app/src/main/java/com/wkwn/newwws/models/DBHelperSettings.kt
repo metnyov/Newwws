@@ -29,16 +29,17 @@ class DBHelperSettings(context: Context?) : SQLiteOpenHelper(context, DATABASE_N
     }
 
     fun isEmpty(): Boolean {
-        val cursor = this.readableDatabase.rawQuery("select * from $TABLE_SETTINGS", null)
+        val cursor = this@DBHelperSettings.readableDatabase.rawQuery("select * from $TABLE_SETTINGS", null)
         val res = !cursor.moveToFirst()
         cursor.close()
         return res
     }
 
-    fun setCountry (country: String) = this.writableDatabase.execSQL("update $TABLE_SETTINGS set $KEY_COUNTRY = '$country'")
+    fun setCountry (country: String) = this@DBHelperSettings.writableDatabase
+            .execSQL("update $TABLE_SETTINGS set $KEY_COUNTRY = '$country'")
 
     fun getCountry (): String {
-        val cursor = this.readableDatabase.rawQuery("select $KEY_COUNTRY from $TABLE_SETTINGS", null)
+        val cursor = this@DBHelperSettings.readableDatabase.rawQuery("select $KEY_COUNTRY from $TABLE_SETTINGS", null)
         val res = if (cursor.moveToFirst())
             cursor.getString(cursor.getColumnIndex(KEY_COUNTRY))
         else

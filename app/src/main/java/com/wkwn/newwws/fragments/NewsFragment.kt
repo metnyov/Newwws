@@ -1,6 +1,5 @@
 package com.wkwn.newwws.fragments
 
-import android.annotation.SuppressLint
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
@@ -9,27 +8,48 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.wkwn.newwws.*
 import com.wkwn.newwws.adapters.ListAdapter
+import com.wkwn.newwws.models.CustomLinearLayoutManager
 import com.wkwn.newwws.models.DBHelper
-import com.wkwn.newwws.models.News
 import com.wkwn.newwws.models.UrlApi
 
 
-@SuppressLint("ValidFragment")
-class NewsFragment(private val dbHelper: DBHelper, private val category: UrlApi.Category, private val country: String) : Fragment() {
+class NewsFragment: Fragment() {
 
-    private var news: News = News(arrayListOf())
+    private var flagLoad = false
+    private var count = 20
+
     private lateinit var rV: RecyclerView
-    private lateinit var fab: FloatingActionButton
+    private lateinit var fabRefresh: FloatingActionButton
+    private lateinit var fabUp: FloatingActionButton
     private lateinit var swipe: SwipeRefreshLayout
+    private lateinit var dbHelper: DBHelper
+    private lateinit var category: String
+    private lateinit var country: String
+    private lateinit var curTable: String
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        category = this@NewsFragment.arguments.getString("CATEGORY")
+        country = this@NewsFragment.arguments.getString("COUNTRY")
+        curTable = when(category){
+            UrlApi.Category.DEFAULT.category -> DBHelper.TABLE_DEFAULT
+            UrlApi.Category.Business.category -> DBHelper.TABLE_BUSINESS
+            UrlApi.Category.Health.category -> DBHelper.TABLE_HEALTH
+            UrlApi.Category.Sports.category -> DBHelper.TABLE_SPORTS
+            UrlApi.Category.Technology.category -> DBHelper.TABLE_TECHNOLOGY
+            UrlApi.Category.Entertainment.category -> DBHelper.TABLE_ENTERTAINMENT
+            else -> DBHelper.TABLE_DEFAULT
+        }
+        dbHelper = DBHelper(country, activity.applicationContext)
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
@@ -38,78 +58,80 @@ class NewsFragment(private val dbHelper: DBHelper, private val category: UrlApi.
         val rootView: View = inflater!!.inflate(R.layout.fragment_main, container, false)
 
         rV = rootView.findViewById(R.id.recyclerView)
+        swipe = rootView.findViewById(R.id.swipeRefreshLayout)
+        fabRefresh = rootView.findViewById(R.id.fab_refresh)
+        fabRefresh.hide()
+        fabUp = rootView.findViewById(R.id.fab_up)
+        fabUp.hide()
+
         rV.setHasFixedSize(true)
-        rV.layoutManager = LinearLayoutManager(activity.applicationContext)
+        rV.layoutManager = CustomLinearLayoutManager(activity.applicationContext)
         rV.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
-            /*TODO: pagination
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int){
-                super.onScrolled(recyclerView, dx, dy)
-            }*/
-
-            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int){
-                when(newState) {
-                    RecyclerView.SCROLL_STATE_IDLE -> {
-                        if ((recyclerView?.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition() < 5)
-                            fab.hide()
-                    }
-                    RecyclerView.SCROLL_STATE_SETTLING -> {
-                        if ((recyclerView?.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition() > 5)
-                            fab.show()
+                if (dy > 0) {
+                    fabUp.show()
+                    val pos = (recyclerView.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
+                    if (pos == count - 1) {
+                        count += 20
+                        rV.adapter = ListAdapter(dbHelper.toNews(curTable, count), activity.applicationContext)
+                        rV.scrollToPosition(pos - 1)
                     }
                 }
+                else
+                    fabUp.hide()
             }
+
         })
 
-        fab = rootView.findViewById(R.id.fab)
-        fab.hide()
-        fab.setOnClickListener({
-            rV.scrollToPosition(0)
-            fab.hide()
+        if (!dbHelper.isEmpty(curTable))
+            rV.adapter = ListAdapter(dbHelper.toNews(curTable, count), activity.applicationContext)
+        else {
+            if (!hasConnection()) {
+                fabRefresh.show()
+                Toast.makeText(activity.applicationContext, R.string.notConnect, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        if (hasConnection() && !flagLoad) {
+            swipe.isRefreshing = true
+
+            AsyncHandler().loadNewsTask(rV, swipe, dbHelper, count, curTable,
+                    activity.applicationContext, UrlApi().create(category, country))
+            flagLoad = true
+        }
+
+        fabUp.setOnClickListener({
+            rV.stopScroll()
+            rV.smoothScrollToPosition(0)
+            fabUp.hide()
         })
 
-        swipe = rootView.findViewById(R.id.swipeRefreshLayout)
-        swipe.setOnRefreshListener({ refresh() })
+        fabRefresh.setOnClickListener({ refreshFragment() })
 
-        refresh()
+        swipe.setOnRefreshListener({ refreshFragment() })
 
         return rootView
     }
 
-    private fun refresh() {
+    override fun onDestroy() {
+        Log.d("MY_LOGS", "onDestroy(): $category")
+        super.onDestroy()
+    }
+
+    private fun refreshFragment() {
         swipe.isRefreshing = true
-
-        val curTable = when(category){
-            UrlApi.Category.DEFAULT -> DBHelper.TABLE_DEFAULT
-            UrlApi.Category.Business -> DBHelper.TABLE_BUSINESS
-            UrlApi.Category.Health -> DBHelper.TABLE_HEALTH
-            UrlApi.Category.Sports -> DBHelper.TABLE_SPORTS
-            UrlApi.Category.Technology -> DBHelper.TABLE_TECHNOLOGY
-            UrlApi.Category.Entertainment -> DBHelper.TABLE_ENTERTAINMENT
-        }
-
-        if(hasConnection()) {
-            when {
-                news.isEmpty() -> AsyncHandler.RequestTask(rV, swipe, news, dbHelper, category, activity.applicationContext)
-                        .execute(UrlApi().create(category, country))
-
-                dbHelper.checkCompareId(curTable, news.articles[0].publishedAt.time, news.articles[0].url) -> {
-                    rV.adapter = ListAdapter(dbHelper.toNews(curTable), activity.applicationContext)
-                    swipe.isRefreshing = false
-                }
-
-                else -> {
-                    if (!news.isEmpty())
-                        news.articles.clear()
-                    AsyncHandler.RequestTask(rV, swipe, news, dbHelper, category, activity.applicationContext)
-                            .execute(UrlApi().create(category, country))
-                }
+        when {
+            hasConnection() -> {
+                AsyncHandler().loadNewsTask(rV, swipe, dbHelper, count, curTable,
+                        activity.applicationContext, UrlApi().create(category, country))
+                fabRefresh.hide()
             }
-        }
-        else {
-            rV.adapter = ListAdapter(dbHelper.toNews(curTable), activity.applicationContext)
-            swipe.isRefreshing = false
-            Toast.makeText(activity.applicationContext, "Нет соединения", Toast.LENGTH_SHORT).show()
+
+            else -> {
+                Toast.makeText(activity.applicationContext, R.string.notConnect, Toast.LENGTH_SHORT).show()
+                swipe.isRefreshing = false
+            }
         }
     }
 

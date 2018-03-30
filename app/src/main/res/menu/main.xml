@@ -2,23 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/ru"
-        android:icon="@drawable/russia"
-        android:title="@string/ru"
+        android:id="@+id/county"
+        android:title="@string/country"
         app:showAsAction="never"/>
-    <item
-        android:id="@+id/ua"
-        android:icon="@drawable/ukraine"
-        android:title="@string/ua"
-        app:showAsAction="never"/>
-    <item
-        android:id="@+id/us"
-        android:icon="@drawable/united_states"
-        android:title="@string/us"
-        app:showAsAction="never"/>
-    <item
-        android:id="@+id/gb"
-        android:icon="@drawable/united_kingdom"
-        android:title="@string/gb"
-        app:showAsAction="never"/>
+
 </menu>

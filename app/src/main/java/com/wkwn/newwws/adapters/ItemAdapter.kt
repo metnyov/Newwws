@@ -6,15 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import android.support.v4.content.ContextCompat.startActivity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import com.bumptech.glide.Glide
 import com.wkwn.newwws.models.NewsItem
 import com.wkwn.newwws.R
+import com.wkwn.newwws.activities.BrowserActivity
 
 
 class ItemAdapter (private val newsItem: NewsItem,
@@ -24,15 +22,13 @@ class ItemAdapter (private val newsItem: NewsItem,
 
         holder.title.text = newsItem.title
         holder.description.text = newsItem.description
-        holder.author.text = newsItem.author
         holder.publishedAt.text = newsItem.getFormattedDateString("d MMMM yyyy  HH:mm:ss")
 
-        if (newsItem.urlToImage != null)
-            Glide.with(context).load(Uri.parse(newsItem.urlToImage)).into(holder.img)
-
         holder.btn.setOnClickListener {
-            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(newsItem.url))
-            startActivity(context, browserIntent, Bundle())
+            val intent = Intent(context, BrowserActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.putExtra("url", newsItem.url)
+            startActivity(context, intent, Bundle())
         }
     }
 
@@ -46,9 +42,7 @@ class ItemAdapter (private val newsItem: NewsItem,
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val title: TextView = itemView.findViewById(R.id.item_title)
         val description: TextView = itemView.findViewById(R.id.item_description)
-        val author: TextView = itemView.findViewById(R.id.item_author)
         val publishedAt: TextView = itemView.findViewById(R.id.item_date)
-        val img: ImageView = itemView.findViewById(R.id.item_img)
         val btn: Button = itemView.findViewById(R.id.readBtn)
     }
 }

@@ -1,9 +1,23 @@
 <resources>
-    <string name="app_name">Newwws</string>
+    <string name="app_name">NWS</string>
 
-    <string name="ru">Россия</string>
-    <string name="ua">Украина</string>
-    <string name="us">США</string>
-    <string name="gb">Великобритания</string>
+    <string name="country">Страна</string>
 
+    <string name="head">главное</string>
+    <string name="business">бизнес</string>
+    <string name="health">здоровье</string>
+    <string name="sport">спорт</string>
+    <string name="technology">технологии</string>
+    <string name="entertainment">шоу-бизнес</string>
+
+    <string name="chooseCountry">Выберите страну</string>
+    <string name="webPage">Веб-страница</string>
+    <string name="notConnect">Нет соединения</string>
+    <string name="read">Читать статью</string>
+
+    <string name="share">Поделиться</string>
+    <string name="refresh">Обновить</string>
+    <string name="copyLink">Скопировать ссылку</string>
+    <string name="openInBrowser">Открыть в браузере</string>
+    <string name="okCopy">Ссылка скопирована в буфер обмена</string>
 </resources>

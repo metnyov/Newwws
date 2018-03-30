@@ -7,10 +7,10 @@ class UrlApi {
     private val url: String = "https://newsapi.org/v2/top-headlines"
     private val apiKey: String = "5ac94b1cfd104e19802d81f30d5c7daa"
 
-    enum class Category(val category: String?){
+    enum class Category(val category: String){
         Business("business"), Entertainment("entertainment"),
         Health("health"), Sports("sports"),
-        Technology("technology"), DEFAULT(null);
+        Technology("technology"), DEFAULT("null");
     }
 
     enum class Country(val country: String){
@@ -24,15 +24,10 @@ class UrlApi {
         UAE("ae"), Ukraine("ua"), UnitedKingdom("gb"), UnitedStates("us"), Venuzuela("ve");
     }
 
-    fun create(category: Category = Category.DEFAULT, country: String = Country.Russia.country) =
-            if (category == Category.DEFAULT)
-                url + "?" +
-                "country=" + country +
-                "&apiKey=" + apiKey
+    fun create(category: String? = Category.DEFAULT.category, country: String = Country.Russia.country,
+               pageSize: Int = 20) =
+            if (category == Category.DEFAULT.category)
+                "$url?country=$country&pageSize=$pageSize&apiKey=$apiKey"
             else
-                url + "?" +
-                "country=" + country +
-                "&category=" + category.category +
-                "&apiKey=" + apiKey
-
+                "$url?country=$country&category=$category&pageSize=$pageSize&apiKey=$apiKey"
 }

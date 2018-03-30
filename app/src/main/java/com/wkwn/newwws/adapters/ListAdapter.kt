@@ -27,13 +27,14 @@ class ListAdapter(val data: News, private val context: Context) : RecyclerView.A
         if (data.articles[position].urlToImage == null)
             Glide.with(context).load(R.drawable.newspaper).into(holder.img)
         else
-            Glide.with(context).load(Uri.parse(data.articles[position].urlToImage)).apply(RequestOptions()
-                    .placeholder(R.drawable.loading)
-                    .error(R.drawable.newspaper))
+            Glide.with(context).load(Uri.parse(data.articles[position].urlToImage))
+                    .apply(RequestOptions()
+                            .placeholder(R.drawable.loading)
+                            .error(R.drawable.newspaper))
                     .into(holder.img)
 
 
-        holder.title.text = if (tmpTitle.length <= 100) tmpTitle else tmpTitle.substring(0..100) + "..."
+        holder.title.text = if (tmpTitle.length <= 70) tmpTitle else tmpTitle.substring(0..70) + "..."
         holder.date.text = data.articles[position].getFormattedDateString("d MMMM")
         holder.time.text = data.articles[position].getFormattedDateString("HH:mm")
 

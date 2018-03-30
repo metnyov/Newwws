@@ -3,16 +3,23 @@ package com.wkwn.newwws.activities
 import android.content.ContentValues
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.design.widget.TabLayout
+import android.support.v4.app.Fragment
 import android.support.v4.view.ViewPager
+import android.support.v7.app.AlertDialog
 import android.view.Menu
 import android.view.MenuItem
-import com.wkwn.newwws.AsyncHandler
-import com.wkwn.newwws.models.DBHelper
+import android.widget.Toast
 import com.wkwn.newwws.R
+import com.wkwn.newwws.adapters.ViewPagerAdapter
 import com.wkwn.newwws.models.UrlApi
 import com.wkwn.newwws.fragments.NewsFragment
 import com.wkwn.newwws.models.DBHelperSettings
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -21,14 +28,14 @@ class MainActivity : AppCompatActivity(){
 
     private lateinit var country: String
     private lateinit var names: ArrayList<String>
-    private lateinit var lastMenuItem: MenuItem
+    private var choiceId: Int = 0
+    private val countries = UrlApi.Country.values().map { it.name }.toTypedArray()
+    private val countriesIds = UrlApi.Country.values().map { it.country }.toTypedArray()
     private val dbHelperSettings = DBHelperSettings(this@MainActivity)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-
 
         when (Locale.getDefault().language) {
             "ru" -> {
@@ -50,84 +57,108 @@ class MainActivity : AppCompatActivity(){
             }
             db.insert(DBHelperSettings.TABLE_SETTINGS, null, contentValues)
         }
-        else
+        else {
             country = dbHelperSettings.getCountry()
+        }
+
+        choiceId = countriesIds.indexOf(country)
+
+        setSupportActionBar(toolbar)
+        viewPager.offscreenPageLimit = 5
 
         setupViewPager(viewPager)
         tabs.setupWithViewPager(viewPager)
+        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {}
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+                //TODO: поднять список
+                Toast.makeText(this@MainActivity, tab!!.text, Toast.LENGTH_SHORT).show()
+            }
+
+        })
     }
 
     private fun setupViewPager(viewPager: ViewPager) {
 
-        AsyncHandler.SetupViewPagerTask(viewPager, supportFragmentManager).
-                execute(Pair(NewsFragment(DBHelper(country, this), UrlApi.Category.DEFAULT, country), names[0]),
-                        Pair(NewsFragment(DBHelper(country, this), UrlApi.Category.Business, country), names[1]),
-                        Pair(NewsFragment(DBHelper(country, this), UrlApi.Category.Health, country), names[2]),
-                        Pair(NewsFragment(DBHelper(country, this), UrlApi.Category.Sports, country), names[3]),
-                        Pair(NewsFragment(DBHelper(country, this), UrlApi.Category.Technology, country), names[4]),
-                        Pair(NewsFragment(DBHelper(country, this), UrlApi.Category.Entertainment, country), names[5]))
+        val defaultBundle = Bundle()
+        defaultBundle.putString("CATEGORY", UrlApi.Category.DEFAULT.category)
+        defaultBundle.putString("COUNTRY", country)
 
+        val businessBundle = Bundle()
+        businessBundle.putString("CATEGORY", UrlApi.Category.Business.category)
+        businessBundle.putString("COUNTRY", country)
+
+        val healthBundle = Bundle()
+        healthBundle.putString("CATEGORY", UrlApi.Category.Health.category)
+        healthBundle.putString("COUNTRY", country)
+
+        val sportsBundle = Bundle()
+        sportsBundle.putString("CATEGORY", UrlApi.Category.Sports.category)
+        sportsBundle.putString("COUNTRY", country)
+
+        val technologyBundle = Bundle()
+        technologyBundle.putString("CATEGORY", UrlApi.Category.Technology.category)
+        technologyBundle.putString("COUNTRY", country)
+
+        val entertainmentBundle = Bundle()
+        entertainmentBundle.putString("CATEGORY", UrlApi.Category.Entertainment.category)
+        entertainmentBundle.putString("COUNTRY", country)
+
+        val adapter = ViewPagerAdapter(supportFragmentManager)
+        launch(UI) {
+            val setAdapter = async(CommonPool) {
+                val pairs = arrayListOf<Pair<Fragment, String>>(
+                        Pair(NewsFragment().apply { arguments = defaultBundle }, names[0]),
+                        Pair(NewsFragment().apply { arguments = businessBundle }, names[1]),
+                        Pair(NewsFragment().apply { arguments = healthBundle }, names[2]),
+                        Pair(NewsFragment().apply { arguments = sportsBundle }, names[3]),
+                        Pair(NewsFragment().apply { arguments = technologyBundle }, names[4]),
+                        Pair(NewsFragment().apply { arguments = entertainmentBundle }, names[5])
+                )
+                pairs.map { adapter.addFragment(it.first, it.second) }
+            }
+            setAdapter.await()
+
+            viewPager.adapter = adapter
+        }
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)
-        val id = when (country){
-            UrlApi.Country.Russia.country -> R.id.ru
-            UrlApi.Country.Ukraine.country -> R.id.ua
-            UrlApi.Country.UnitedStates.country -> R.id.us
-            UrlApi.Country.UnitedKingdom.country -> R.id.gb
-            else -> R.id.us
-        }
-        lastMenuItem = menu.findItem(id)
-        lastMenuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-            R.id.ru -> {
-                if (country != UrlApi.Country.Russia.country) {
-                    country = UrlApi.Country.Russia.country
-                    dbHelperSettings.setCountry(country)
-                    lastMenuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
-                    item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-                    lastMenuItem = item
-                    setupViewPager(viewPager)
-                }
-                false
+            R.id.county -> {
+                showAlertChooseCountry()
+                true
             }
-            R.id.ua -> {
-                if (country != UrlApi.Country.Ukraine.country) {
-                    country = UrlApi.Country.Ukraine.country
-                    dbHelperSettings.setCountry(country)
-                    lastMenuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
-                    item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-                    lastMenuItem = item
-                    setupViewPager(viewPager)
-                }
-                false
-            }
-            R.id.us -> {
-                if (country != UrlApi.Country.UnitedStates.country) {
-                    country = UrlApi.Country.UnitedStates.country
-                    dbHelperSettings.setCountry(country)
-                    lastMenuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
-                    item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-                    lastMenuItem = item
-                    setupViewPager(viewPager)
-                }
-                false
-            }
-            R.id.gb -> {
-                if (country != UrlApi.Country.UnitedKingdom.country) {
-                    country = UrlApi.Country.UnitedKingdom.country
-                    dbHelperSettings.setCountry(country)
-                    lastMenuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
-                    item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-                    lastMenuItem = item
-                    setupViewPager(viewPager)
-                }
-                false
-            }
+
             else -> super.onOptionsItemSelected(item)
-        }
+    }
+
+    private fun showAlertChooseCountry() {
+        var id = -1
+        val alertDialog = AlertDialog.Builder(this@MainActivity)
+                .setSingleChoiceItems(countries, choiceId,
+                        { _, i ->
+                            if (country != countriesIds[i])
+                                id = i
+                        })
+                .setPositiveButton("OK",
+                        { _, _ ->
+                            if (id != -1 && choiceId != id){
+                                country = countriesIds[id]
+                                choiceId = id
+                                dbHelperSettings.setCountry(country)
+                                setupViewPager(viewPager)
+                            }
+                        })
+                .setNeutralButton("CANCEL", { _, _ -> })
+                .setTitle(R.string.chooseCountry)
+        alertDialog.show()
+    }
 }
