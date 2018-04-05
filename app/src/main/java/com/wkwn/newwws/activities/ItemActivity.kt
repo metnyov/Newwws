@@ -30,7 +30,9 @@ class ItemActivity : AppCompatActivity() {
                 intent.getStringExtra("urlToImage"), date)
 
         if (newsItem.urlToImage != null)
-            Glide.with(this@ItemActivity).load(Uri.parse(newsItem.urlToImage)).into(item_img)
+            Glide.with(this@ItemActivity)
+                    .load(Uri.parse(newsItem.urlToImage))
+                    .into(item_img)
 
         supportActionBar!!.title = newsItem.title
         if (newsItem.author != null)

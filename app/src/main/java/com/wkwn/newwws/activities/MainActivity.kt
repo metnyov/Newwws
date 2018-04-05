@@ -3,20 +3,17 @@ package com.wkwn.newwws.activities
 import android.content.ContentValues
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AlertDialog
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import com.wkwn.newwws.R
 import com.wkwn.newwws.adapters.ViewPagerAdapter
 import com.wkwn.newwws.models.UrlApi
 import com.wkwn.newwws.fragments.NewsFragment
 import com.wkwn.newwws.models.DBHelperSettings
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
@@ -68,15 +65,7 @@ class MainActivity : AppCompatActivity(){
 
         setupViewPager(viewPager)
         tabs.setupWithViewPager(viewPager)
-        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {}
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-                //TODO: поднять список
-                Toast.makeText(this@MainActivity, tab!!.text, Toast.LENGTH_SHORT).show()
-            }
 
-        })
     }
 
     private fun setupViewPager(viewPager: ViewPager) {
@@ -107,7 +96,7 @@ class MainActivity : AppCompatActivity(){
 
         val adapter = ViewPagerAdapter(supportFragmentManager)
         launch(UI) {
-            val setAdapter = async(CommonPool) {
+            async {
                 val pairs = arrayListOf<Pair<Fragment, String>>(
                         Pair(NewsFragment().apply { arguments = defaultBundle }, names[0]),
                         Pair(NewsFragment().apply { arguments = businessBundle }, names[1]),
@@ -117,8 +106,7 @@ class MainActivity : AppCompatActivity(){
                         Pair(NewsFragment().apply { arguments = entertainmentBundle }, names[5])
                 )
                 pairs.map { adapter.addFragment(it.first, it.second) }
-            }
-            setAdapter.await()
+            }.await()
 
             viewPager.adapter = adapter
         }

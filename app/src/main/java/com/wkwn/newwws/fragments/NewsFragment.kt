@@ -8,21 +8,20 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.wkwn.newwws.*
+import com.wkwn.newwws.AsyncHandler
+import com.wkwn.newwws.R
 import com.wkwn.newwws.adapters.ListAdapter
 import com.wkwn.newwws.models.CustomLinearLayoutManager
 import com.wkwn.newwws.models.DBHelper
 import com.wkwn.newwws.models.UrlApi
 
 
-class NewsFragment: Fragment() {
+class NewsFragment : Fragment() {
 
-    private var flagLoad = false
     private var count = 20
 
     private lateinit var rV: RecyclerView
@@ -38,8 +37,8 @@ class NewsFragment: Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        category = this@NewsFragment.arguments.getString("CATEGORY")
-        country = this@NewsFragment.arguments.getString("COUNTRY")
+        category = this@NewsFragment.arguments!!.getString("CATEGORY")
+        country = this@NewsFragment.arguments!!.getString("COUNTRY")
         curTable = when(category){
             UrlApi.Category.DEFAULT.category -> DBHelper.TABLE_DEFAULT
             UrlApi.Category.Business.category -> DBHelper.TABLE_BUSINESS
@@ -49,13 +48,13 @@ class NewsFragment: Fragment() {
             UrlApi.Category.Entertainment.category -> DBHelper.TABLE_ENTERTAINMENT
             else -> DBHelper.TABLE_DEFAULT
         }
-        dbHelper = DBHelper(country, activity.applicationContext)
+        dbHelper = DBHelper(country, activity!!.applicationContext)
     }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        val rootView: View = inflater!!.inflate(R.layout.fragment_main, container, false)
+        val rootView: View = inflater.inflate(R.layout.fragment_main, container, false)
 
         rV = rootView.findViewById(R.id.recyclerView)
         swipe = rootView.findViewById(R.id.swipeRefreshLayout)
@@ -65,7 +64,7 @@ class NewsFragment: Fragment() {
         fabUp.hide()
 
         rV.setHasFixedSize(true)
-        rV.layoutManager = CustomLinearLayoutManager(activity.applicationContext)
+        rV.layoutManager = CustomLinearLayoutManager(activity!!.applicationContext)
         rV.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int){
@@ -74,7 +73,7 @@ class NewsFragment: Fragment() {
                     val pos = (recyclerView.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
                     if (pos == count - 1) {
                         count += 20
-                        rV.adapter = ListAdapter(dbHelper.toNews(curTable, count), activity.applicationContext)
+                        rV.adapter = ListAdapter(dbHelper.toNews(curTable, count), activity!!.applicationContext)
                         rV.scrollToPosition(pos - 1)
                     }
                 }
@@ -85,20 +84,32 @@ class NewsFragment: Fragment() {
         })
 
         if (!dbHelper.isEmpty(curTable))
-            rV.adapter = ListAdapter(dbHelper.toNews(curTable, count), activity.applicationContext)
+            rV.adapter = ListAdapter(dbHelper.toNews(curTable, count), activity!!.applicationContext)
         else {
             if (!hasConnection()) {
                 fabRefresh.show()
-                Toast.makeText(activity.applicationContext, R.string.notConnect, Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity!!.applicationContext, R.string.notConnect, Toast.LENGTH_SHORT).show()
             }
         }
-
-        if (hasConnection() && !flagLoad) {
-            swipe.isRefreshing = true
-
+        if (dbHelper.isEmpty() && hasConnection()) {
             AsyncHandler().loadNewsTask(rV, swipe, dbHelper, count, curTable,
-                    activity.applicationContext, UrlApi().create(category, country))
-            flagLoad = true
+                    activity!!.applicationContext, UrlApi().create(category, country))
+        }
+        else if (hasConnection()) {
+            when (getConnectionType()) {
+                ConnectivityManager.TYPE_WIFI -> {
+                    AsyncHandler().loadNewsTask(rV, swipe, dbHelper, count, curTable,
+                            activity!!.applicationContext, UrlApi().create(category, country))
+                }
+                ConnectivityManager.TYPE_MOBILE -> {
+                    AsyncHandler().checkUpdateNewsTask(fabRefresh, dbHelper, curTable,
+                            UrlApi().create(category, country, 1))
+                }
+                else -> {
+                    AsyncHandler().loadNewsTask(rV, swipe, dbHelper, count, curTable,
+                            activity!!.applicationContext, UrlApi().create(category, country))
+                }
+            }
         }
 
         fabUp.setOnClickListener({
@@ -114,30 +125,29 @@ class NewsFragment: Fragment() {
         return rootView
     }
 
-    override fun onDestroy() {
-        Log.d("MY_LOGS", "onDestroy(): $category")
-        super.onDestroy()
-    }
-
     private fun refreshFragment() {
-        swipe.isRefreshing = true
         when {
             hasConnection() -> {
                 AsyncHandler().loadNewsTask(rV, swipe, dbHelper, count, curTable,
-                        activity.applicationContext, UrlApi().create(category, country))
+                        activity!!.applicationContext, UrlApi().create(category, country))
                 fabRefresh.hide()
             }
 
             else -> {
-                Toast.makeText(activity.applicationContext, R.string.notConnect, Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity!!.applicationContext, R.string.notConnect, Toast.LENGTH_SHORT).show()
                 swipe.isRefreshing = false
             }
         }
     }
 
     private fun hasConnection(): Boolean {
-        val cm = activity.applicationContext.getSystemService(AppCompatActivity.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm = activity!!.applicationContext.getSystemService(AppCompatActivity.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = cm.activeNetworkInfo
         return networkInfo != null && networkInfo.isConnectedOrConnecting
+    }
+
+    private fun getConnectionType(): Int {
+        val cm = activity!!.applicationContext.getSystemService(AppCompatActivity.CONNECTIVITY_SERVICE) as ConnectivityManager
+        return cm.activeNetworkInfo.type
     }
 }

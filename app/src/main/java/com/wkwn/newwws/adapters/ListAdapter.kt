@@ -29,6 +29,7 @@ class ListAdapter(val data: News, private val context: Context) : RecyclerView.A
         else
             Glide.with(context).load(Uri.parse(data.articles[position].urlToImage))
                     .apply(RequestOptions()
+                            .timeout(2500)
                             .placeholder(R.drawable.loading)
                             .error(R.drawable.newspaper))
                     .into(holder.img)

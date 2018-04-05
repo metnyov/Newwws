@@ -8,10 +8,10 @@ import com.wkwn.newwws.adapters.ListAdapter
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import android.content.ContentValues
+import android.support.design.widget.FloatingActionButton
 import android.util.Log
 import com.wkwn.newwws.models.DBHelper
 import com.wkwn.newwws.models.News
-import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
@@ -19,12 +19,13 @@ import kotlinx.coroutines.experimental.launch
 
 class AsyncHandler {
 
-    fun loadNewsTask(recyclerView: RecyclerView, swipeRefreshLayout: SwipeRefreshLayout, dbHelper: DBHelper,
+    fun loadNewsTask(recyclerView: RecyclerView, swipe: SwipeRefreshLayout, dbHelper: DBHelper,
                      limit: Int, curTable: String, context: Context, url: String) = launch(UI) {
 
         val news = News(arrayListOf())
+        swipe.isRefreshing = true
 
-        async(CommonPool) {
+        async {
             try {
                 val client = OkHttpClient()
                         .newBuilder()
@@ -40,13 +41,14 @@ class AsyncHandler {
         }.await()
 
         if (news.isEmpty() || dbHelper.checkCompare(curTable, news.articles[0].url)) {
-            swipeRefreshLayout.isRefreshing = false
+            swipe.isRefreshing = false
+            recyclerView.adapter = ListAdapter(dbHelper.toNews(curTable, limit), context)
             return@launch
         }
 
         val database = dbHelper.writableDatabase
 
-        async(CommonPool) {
+        async {
             for (el in news.articles) {
 
                 if (dbHelper.checkCompare(curTable, el.url))
@@ -69,7 +71,34 @@ class AsyncHandler {
         }.await()
 
         recyclerView.adapter = ListAdapter(dbHelper.toNews(curTable, limit), context)
-        swipeRefreshLayout.isRefreshing = false
+        swipe.isRefreshing = false
+    }
+
+    fun checkUpdateNewsTask(fab: FloatingActionButton, dbHelper: DBHelper,
+                               curTable: String, url: String) = launch(UI) {
+
+        val news = News(arrayListOf())
+
+        async {
+            try {
+                val client = OkHttpClient()
+                        .newBuilder()
+                        .build()
+
+                val request = Request.Builder().url(url).build()
+                val response = client.newCall(request).execute()
+                val responseText = response.body()!!.string()
+                news.articles.addAll(Gson().fromJson(responseText, News::class.java).articles)
+            } catch (e: Exception) {
+                Log.d("Failed connection", e.message)
+            }
+        }.await()
+
+        if (news.isEmpty() || dbHelper.checkCompare(curTable, news.articles[0].url))
+            return@launch
+        else
+            fab.show()
+
     }
 
 }
